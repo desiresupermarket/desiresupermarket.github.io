@@ -1,0 +1,717 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Desire Supermarket</title>
+
+<!-- Import Google Fonts -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&family=Playfair+Display:ital,wght@0,700;1,400&display=swap" rel="stylesheet">
+
+<style>
+/* --- DESIGN SYSTEM VARIABLES --- */
+:root {
+    --bg-color: #fdfbf7;
+    --card-bg: #ffffff;
+    
+    --text-main: #2d3436;
+    --text-muted: #636e72;
+    
+    --primary-color: #2d3436;
+    --accent-color: #e17055;
+    --success-color: #00b894;
+    
+    --aisle-marker: #6c5ce7;
+    
+    --shadow-soft: 0 4px 20px rgba(0,0,0,0.05);
+    --shadow-hover: 0 10px 25px rgba(0,0,0,0.1);
+}
+
+body { 
+    font-family: 'Inter', sans-serif;
+    background-color: var(--bg-color); 
+    color: var(--text-main); 
+    margin: 0; 
+    padding-bottom: 40px;
+    line-height: 1.5;
+}
+
+header { 
+    background: white; 
+    border-bottom: 1px solid #eee;
+    padding: 3rem 1rem; 
+    text-align: center; 
+}
+
+h1 { 
+    font-family: 'Playfair Display', serif;
+    margin: 0; 
+    font-size: 3rem; 
+    color: var(--primary-color);
+    letter-spacing: -1px;
+}
+
+.subtitle { 
+    font-style: italic; 
+    opacity: 0.7; 
+    margin-top: 15px; 
+    display: block;
+    font-family: 'Playfair Display', serif;
+    font-size: 1.2rem;
+}
+
+/* --- BUDGET PANEL (HUD Style) --- */
+#budget-panel {
+    position: fixed; 
+    bottom: 90px; 
+    right: 30px; 
+    width: 300px;
+    background: var(--card-bg); 
+    padding: 20px; 
+    border-radius: 12px; 
+    box-shadow: var(--shadow-hover); 
+    display: flex; 
+    flex-direction: column; 
+    gap: 12px;
+    z-index: 90; 
+    border-top: 4px solid var(--success-color);
+}
+
+.budget-row {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--text-muted);
+    border-bottom: 1px solid #f0f0f0;
+    padding-bottom: 8px;
+}
+
+.budget-row:last-child { border-bottom: none; }
+
+.budget-val { 
+    font-size: 1.4rem; 
+    color: var(--text-main); 
+    font-weight: 700;
+    font-family: 'Playfair Display', serif;
+}
+
+.budget-val.low { color: var(--accent-color); }
+
+
+/* --- MAIN LAYOUT (Grid) --- */
+.container { 
+    max-width: 1400px; 
+    margin: 50px auto; 
+    padding: 0 20px; 
+    display: grid; 
+    /* Responsive Grid Logic */
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); 
+    gap: 40px; 
+}
+
+/* --- AISLE CARD DESIGN --- */
+.aisle-section { 
+    background: var(--card-bg); 
+    border-radius: 8px; 
+    box-shadow: var(--shadow-soft); 
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+/* Subtle hover effect on the whole aisle */
+.aisle-section:hover {
+    transform: translateY(-5px);
+    box-shadow: var(--shadow-hover);
+}
+
+.aisle-header { 
+    padding: 25px 20px; 
+    background: #fff; 
+    border-bottom: 1px solid #f0f0f0; 
+    text-align: left;
+}
+
+.aisle-title { 
+    margin: 0; 
+    font-family: 'Playfair Display', serif;
+    font-size: 1.5rem; 
+    color: var(--primary-color); 
+}
+
+.aisle-desc { 
+    font-size: 0.9rem; 
+    color: var(--text-muted); 
+    margin-top: 8px; 
+    display: block; 
+    line-height: 1.4;
+}
+
+/* --- ITEM LIST (Vertical Stack) --- */
+.items-grid { 
+    padding: 10px 0; 
+}
+
+/* PRODUCT CARD DESIGN */
+.item-card { 
+    border-bottom: 1px solid #f5f5f5; 
+    padding: 20px 25px; 
+    cursor: pointer; 
+    transition: all 0.2s ease; 
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.item-card:hover { 
+    background-color: #fafafa; 
+}
+
+/* Selected State - The "Purchase" */
+.item-card.selected { 
+    background-color: #f0fdf4;
+    border-left: 5px solid var(--success-color);
+}
+
+.item-name { 
+    font-weight: 500; 
+    font-size: 1rem; 
+    margin-bottom: 0; 
+    display: block;
+    width: 75%;
+    line-height: 1.4;
+}
+
+.item-price { 
+    color: var(--accent-color); 
+    font-weight: 600; 
+    font-size: 1.1rem;
+    flex-shrink: 0;
+    margin-right: 15px;
+    background: #fff5f2;
+    padding: 4px 8px;
+    border-radius: 6px;
+}
+
+/* Custom Checkbox Styling */
+.checkbox-mock { 
+    width: 20px; 
+    height: 20px; 
+    border: 2px solid #dfe6e9; 
+    border-radius: 4px;
+    display: flex; 
+    align-items: center; 
+    justify-content: center; 
+    background: white;
+    transition: all 0.2s ease;
+}
+
+.item-card.selected .checkbox-mock { 
+    background: var(--success-color); 
+    border-color: var(--success-color); 
+}
+
+.item-card.selected .checkbox-mock::after { 
+    content: '✓'; 
+    color: white; 
+    font-size: 12px; 
+    font-weight: bold;
+}
+
+
+/* --- CHECKOUT / FOOTER --- */
+#checkout-bar {
+    position: fixed; 
+    bottom: 0; 
+    left: 0; 
+    width: 100%; 
+    background: var(--primary-color); 
+    padding: 25px; 
+    box-shadow: 0 -5px 30px rgba(0,0,0,0.2); 
+    color: white;
+    display: flex; 
+    justify-content: center; 
+    align-items: center; 
+    gap: 40px; 
+    z-index: 100; 
+}
+
+#student-id-display { font-family: monospace; letter-spacing: 2px;}
+
+button#submit-btn { 
+    background: var(--success-color); 
+    color: white; 
+    border: none; 
+    padding: 14px 40px; 
+    font-size: 1rem; 
+    font-weight: 600;
+    border-radius: 50px;
+    cursor: pointer; 
+    transition: transform 0.2s, background 0.2s; 
+    box-shadow: 0 4px 15px rgba(0,184,148, 0.4);
+}
+
+button#submit-btn:hover { 
+    background: #00a383; 
+    transform: translateY(-2px);
+}
+
+button#submit-btn:disabled { 
+    background: #636e72; 
+    cursor: not-allowed; 
+    box-shadow: none;
+    transform: none;
+}
+
+
+/* --- MODAL STYLES --- */
+.modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
+background: rgba(45, 52, 54, 0.9); z-index: 200; justify-content: center; align-items: center;}
+.modal-content { background: white; padding: 40px; border-radius: 12px; max-width: 500px; text-align: center; box-shadow: var(--shadow-hover);}
+
+/* --- MOBILE ADJUSTMENTS --- */
+@media (max-width: 768px) {
+    .container { grid-template-columns: 1fr; padding-bottom: 20px;} 
+    #budget-panel { width: auto; left: 20px; right: 20px; bottom: 90px;}
+    
+    h1 { font-size: 2rem; }
+    .subtitle { font-size: 1rem; }
+}
+
+</style>
+</head>
+<body>
+
+
+
+<header>
+<h1>The Desire Supermarket</h1>
+<span class="subtitle">Welcome to the desire supermarket! <br> Imagine you are currently desire-less...but don't fret; we have desires here—for sale! <br> What combination of desires would you like for yourself to have? <br> You have a finite budget, so be prudent...</span>
+</header>
+
+
+
+<!-- Budget Panel -->
+<div id="budget-panel">
+<div style="text-align:center; margin-bottom:5px; color:#b2bec3; font-size:0.7rem; text-transform:uppercase; letter-spacing:1px;">Checkout Cart</div>
+<div class="budget-row">
+<span>Total Willpower:</span>
+<span>500</span>
+</div>
+<div class="budget-row">
+<span>Invested / Purchased:</span>
+<span id="spent-display" class="budget-val">0</span>
+</div>
+<div class="budget-row">
+<span>Remaining:</span>
+<span id="remaining-display" class="budget-val">500</span>
+</div>
+</div>
+
+
+
+<div class="container" id="store-container">
+<!-- Aisles will be injected here by JS -->
+</div>
+
+
+
+<div id="checkout-bar">
+<div style="color: white; font-size: 0.9rem;">Anonymized Session ID: <span id="student-id-display" style="font-weight: bold; color: #fab1a0;"></span></div>
+<button id="submit-btn" onclick="submitDesires()">Checkout / Submit</button>
+</div>
+
+
+
+<!-- Success Modal -->
+<div class="modal" id="success-modal">
+    <div class="modal-content" style="max-width: 600px;">
+        <h2 style="color: var(--success-color); font-family:'Playfair Display', serif; margin-bottom: 10px;">
+            Way to reflect on what desires you wish to have! You're no longer a wanton! 
+        </h2>
+        <p style="margin-bottom: 25px; color: var(--text-muted);">
+            Here's a list of your purchased desires. Review them below and download/save them for reflection.
+        </p>
+
+        <!-- Dynamic List Container -->
+        <div id="desire-list-container" style="background: #f8f9fa; padding: 20px; border-radius: 8px; margin-bottom: 25px; max-height: 300px; overflow-y: auto;">
+            <!-- Items injected here by JS -->
+        </div>
+
+        <div style="display: flex; gap: 15px; justify-content: center; flex-wrap: wrap;">
+            <button id="download-btn" onclick="downloadDesires()" 
+                style="padding: 12px 30px; cursor:pointer; background:var(--primary-color); color:white; border:none; border-radius:4px;">
+                Download Text File
+            </button>
+
+        </div>
+
+        <button onclick="location.reload()" 
+            style="padding: 12px 30px; cursor:pointer; background:transparent; color:var(--text-muted); border:none; margin-top:15px;">
+            Start Over
+        </button>
+    </div>
+</div>
+
+
+
+<script>
+// --- CONFIGURATION ---
+const TOTAL_BUDGET = 500;
+// REPLACE THIS URL WITH YOUR GOOGLE APPS SCRIPT WEB APP URL
+const API_URL = "https://script.google.com/macros/s/AKfycbyPngA8iwKKrI0YVuP2mbIiK25a_IV41OAbkAPSea2aBAOzC_PEXRcCKfoXFpjJmeUF/exec"; 
+
+
+
+// --- DATA ---
+const inventory = [
+  {
+    aisle: "Self-discipline",
+    description: "Desires that might frame your capacity for agency and other long-term goals.",
+    items: [
+      { name: "A desire to study without distraction", price: 50 },
+      { name: "A desire to wake up early consistently", price: 80 },
+      { name: "A desire to finish projects before deadlines", price: 40 },
+      { name: "A desire to practice patience", price: 30 },
+      { name: "A desire to save money", price: 50 },
+      { name: "A desire to pursue mastery in a craft", price: 90 },
+      { name: "A desire to regularly audit my own desires", price: 100 },
+      { name: "A desire to trust my judgment despite uncertainty", price: 75 }
+    ]
+  },
+  {
+    aisle: "Bodily Appetites & Health",
+    description: "",
+    items: [
+      { name: "A desire for sugary treats", price: 10 },
+      { name: "A desire to resist the urge to eat sugar", price: 45 },
+      { name: "A desire to exercise even when tired", price: 50 },
+      { name: "A desire for over-steeped tea", price: 10 },
+      { name: "A desire to eat spicy food", price: 15 },
+      { name: "A desire to go to the gym regularly", price: 80 },
+      { name: "A desire to feel less pain", price: 40 },
+      { name: "A desire to prioritize rest (over productivity)", price: 60 },
+      { name: "A desire to feel comfortable in my own skin", price: 70 }
+    ]
+  },
+  {
+    aisle: "Character & Virtue",
+    description: "What sort of character would you like to have?",
+    items: [
+      { name: "A desire to tell the truth", price: 80 },
+      { name: "A desire to feel empathy for strangers", price: 20 },
+      { name: "A desire to forgive those who wronged you", price: 60 },
+      { name: "A desire to be assertive in meetings", price: 45 },
+      { name: "A desire to foster deep, mutually understanding relationships", price: 120 },
+      { name: "A desire to be universally approved", price: 90 },
+      { name: "A desire to never feel criticized by others", price: 70 },
+      { name: "A desire to win arguments", price: 15 },
+      { name: "A desire to be curious about topics of which I am ignorant", price: 50 },
+      { name: "A desire to feel guilt when lying", price: 40 }
+    ]
+  },
+  {
+    aisle: "Relations to others",
+    description: "",
+    items: [
+      { name: "A desire to please others, especially those I care for", price: 50 },
+      { name: "A desire to conform to interests of my peers", price: 15 },
+      { name: "A desire to speak impulsively without reflecting", price: 5 },
+      { name: "A desire to find a community that challenges my thinking", price: 85 },
+      { name: "A desire to agree with others to avoid conflict", price: 30 },
+      { name: "A desire to respect traditions I inherited from my family/culture", price: 40 },
+      { name: "A desire to hide my authentic self to avoid judgment", price: 25 }
+    ]
+  },
+  {
+    aisle: "Interests & Hobbies",
+    description: "Desires for everyday interests and hobbies.",
+    items: [
+      { name: "A desire to do mathematics", price: 50 },
+      { name: "A desire to care about latest fashion trends", price: 15 },
+      { name: "A desire to garden", price: 30 },
+      { name: "A desire to collect vintage vinyl records", price: 30 },
+      { name: "A desire to master a video game", price: 10 },
+      { name: "A desire to read books outside my expertise area", price: 45 },
+      { name: "A desire to belong to a community around a shared passion", price: 55 },
+      { name: "A desire to learn a new language purely for joy", price: 60 }
+    ]
+  },
+  {
+    aisle: "Existen-aisle",
+    description: "Puns aside, existence and meaning sold here.",
+    items: [
+      { name: "A desire to be content with who you are", price: 150 },
+      { name: "A desire to find meaning in suffering", price: 90 },
+      { name: "A desire to believe in an afterlife", price: 25 },
+      { name: "A desire to be comfortable with solitude", price: 90 },
+      { name: "A desire to be calm amidst chaos", price: 80 },
+      { name: "A desire to be resilient against difficult times", price: 80 },
+      { name: "A desire to be obsessed with a celebrity", price: 30 }
+    ]
+  },
+  {
+    aisle: "Creativity & Leisure",
+    description: "Desires for play, novelty, and expression.",
+    items: [
+      { name: "A desire to create something new regularly", price: 65 },
+      { name: "A desire to engage in play for the sake of play", price: 40 },
+      { name: "A desire to seek new experiences and adventure", price: 50 },
+      { name: "A desire to observe or experience art", price: 20 },
+      { name: "A desire to embrace messy writing drafts", price: 30 },
+      { name: "A desire to wander without a destination", price: 30 }
+    ]
+  }
+];
+
+
+// --- STATE MANAGEMENT ---
+let selectedItems = [];
+function init() {
+const container = document.getElementById('store-container');
+inventory.forEach(aisle => {
+const aisleDiv = document.createElement('div');
+aisleDiv.className = 'aisle-section';
+// Header
+aisleDiv.innerHTML = `
+                <div class="aisle-header">
+                    <h2 class="aisle-title">${aisle.aisle}</h2>
+                    <span class="aisle-desc">${aisle.description}</span>
+                </div>
+            `;
+
+
+
+// Grid (Vertical Stack)
+const grid = document.createElement('div');
+grid.className = 'items-grid';
+
+
+
+aisle.items.forEach((item, index) => {
+const card = document.createElement('div');
+card.className = 'item-card';
+card.dataset.name = item.name;
+card.dataset.price = item.price;
+card.onclick = () => toggleItem(item);
+// Updated HTML structure for vertical layout
+card.innerHTML = `
+                    <span class="item-name">${item.name}</span>
+                    <div style="display:flex; align-items:center;">
+                        <span class="item-price">$${item.price}</span>
+                        <div class="checkbox-mock"></div>
+                    </div>
+                `;
+grid.appendChild(card);
+            });
+
+
+
+aisleDiv.appendChild(grid);
+container.appendChild(aisleDiv);
+        });
+    }
+
+
+
+function generateStudentId() {
+// Generate a random 6-character alphanumeric ID (e.g., "A7K9M2")
+const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+let id = '';
+for (let i = 0; i < 6; i++) {
+id += chars.charAt(Math.floor(Math.random() * chars.length));
+        }
+// Store in localStorage so it persists if they refresh the page
+const storedId = localStorage.getItem('desireSupermarketId');
+if (storedId) {
+return storedId;
+        } else {
+localStorage.setItem('desireSupermarketId', id);
+return id;
+        }
+    }
+
+
+
+const STUDENT_ID = generateStudentId();
+document.getElementById('student-id-display').innerText = STUDENT_ID;
+
+
+function generateDesireText() {
+    const date = new Date().toLocaleDateString();
+    let text = `My Selected/Purchased Desires\n`;
+    text += `Generated: ${date}\n`;
+    text += `Randomized ID: ${STUDENT_ID}\n`;
+    text += `Total Willpower Invested: ${calculateTotal()}/${TOTAL_BUDGET}\n`;
+    text += `\nSelected Desires:\n\n`;
+
+    selectedItems.forEach((item, index) => {
+        text += `${index + 1}. ${item.name} (${item.price} willpower)\n`;
+    });
+
+    text += `\nReflection Questions:\n\n`;
+    text += `1. Why did I choose these specific desires?\n`;
+    text += `2. How do these desires align with or differ from the desires I currently have?\n`;
+    text += `3. What might my life look like if I had the desires I chose?\n`;
+    text += `4. What might I do to cultivate or develop the desires I selected but do not current have?\n`;
+
+    return text;
+}
+
+
+function downloadDesires() {
+    const textContent = generateDesireText();
+    const blob = new Blob([textContent], { type: 'text/plain' });
+    const url = URL.createObjectURL(blob);
+    
+    // Create a temporary link to trigger download
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `Desire_Portfolio_${STUDENT_ID}.txt`;
+    document.body.appendChild(a);
+    a.click();
+    
+    // Cleanup
+    setTimeout(() => {
+        document.body.removeChild(a);
+        window.URL.revokeObjectURL(url);
+    }, 0);
+}
+
+
+function toggleItem(item) {
+const index = selectedItems.findIndex(i => i.name === item.name);
+if (index > -1) {
+// Remove
+selectedItems.splice(index, 1);
+        } else {
+// Add check budget
+const currentSpent = calculateTotal();
+if (currentSpent + item.price <= TOTAL_BUDGET) {
+selectedItems.push(item);
+            } else {
+alert("Insufficient Willpower! You cannot afford this desire.");
+return; 
+            }
+        }
+updateUI();
+    }
+
+
+
+function calculateTotal() {
+return selectedItems.reduce((sum, item) => sum + item.price, 0);
+    }
+
+
+
+function updateUI() {
+const spent = calculateTotal();
+const remaining = TOTAL_BUDGET - spent;
+document.getElementById('spent-display').innerText = spent;
+document.getElementById('remaining-display').innerText = remaining;
+
+
+
+// Visual feedback on cards
+document.querySelectorAll('.item-card').forEach(card => {
+const name = card.dataset.name;
+if (selectedItems.some(i => i.name === name)) {
+card.classList.add('selected');
+            } else {
+card.classList.remove('selected');
+            }
+        });
+
+
+
+// Budget warning color
+const remainingEl = document.getElementById('remaining-display');
+if(remaining < 0) remainingEl.classList.add('low');
+else remainingEl.classList.remove('low');
+    }
+
+
+
+async function submitDesires() {
+    if (selectedItems.length === 0) {
+        alert("You must select at least one desire to proceed.");
+        return;
+    }
+
+    const btn = document.getElementById('submit-btn');
+    btn.disabled = true;
+    btn.innerText = "Processing...";
+
+    const payload = {
+        studentCode: STUDENT_ID,
+        budgetUsed: calculateTotal(),
+        items: selectedItems.map(i => i.name)
+    };
+
+    try {
+        // Send data to Google Apps Script (keep existing fetch logic)
+        const response = await fetch(API_URL, {
+            method: 'POST',
+            mode: 'no-cors', 
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        });
+
+        // --- NEW: Populate Modal with Data ---
+        populateDesireModal();
+        
+        console.log("Request sent to Google Apps Script for ID:", STUDENT_ID);
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        
+        document.getElementById('success-modal').style.display = 'flex';
+
+    } catch (error) {
+        console.error("Submission error:", error);
+        alert("Error submitting data: " + error.message);
+        btn.disabled = false;
+        btn.innerText = "Commit to Will";
+    }
+}
+
+// --- NEW FUNCTION TO POPULATE MODAL ---
+function populateDesireModal() {
+    const container = document.getElementById('desire-list-container');
+    
+    // Create list HTML
+    let html = `<ul style="list-style: none; padding: 0; margin: 0;">`;
+    
+    selectedItems.forEach(item => {
+        html += `
+            <li style="padding: 12px 0; border-bottom: 1px solid #e9ecef; display: flex; justify-content: space-between;">
+                <span>${item.name}</span>
+                <strong style="color: var(--accent-color);">${item.price} pts</strong>
+            </li>
+        `;
+    });
+    
+    html += `</ul>`;
+    
+    // Add total summary at bottom
+    html += `<div style="margin-top: 15px; padding-top: 15px; border-top: 2px solid #e9ecef; text-align: right;">`;
+    html += `<strong>Total Invested:</strong> ${calculateTotal()} / ${TOTAL_BUDGET} willpower points`;
+    html += `</div>`;
+
+    container.innerHTML = html;
+}
+
+
+
+// Run Init
+init();
+
+
+
+</script>
+</body>
+</html>
